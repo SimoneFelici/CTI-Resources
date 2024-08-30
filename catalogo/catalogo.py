@@ -13,7 +13,7 @@ def get_month_in_quarter(month):
 
 session = HTMLSession()
 translator = Translator()
-i = 14
+i = 5
 data = []
 current_date = datetime.now()
 processed_links = set()
@@ -43,7 +43,6 @@ while i > 0:
         month_in_quarter = get_month_in_quarter(month)
         translated_text = translator.translate(text, src='pt', dest='it').text
         
-        # Valori di default
         severity = "medium"
         sector = ""
         damage = ""
@@ -57,7 +56,6 @@ while i > 0:
                 damage = changes.get("damage", damage)
                 break
         
-        # Aggiungi una riga alla lista dei dati
         data.append(['many', 'all', '', 'Brazil', 'attacco', 'cybercrime', damage, month_in_quarter, quarter, year, sector, 'Phishing/Social Engineering', 
                      severity, '', '', '', tag, translated_text, '', '', 'Simone Felici', link, current_date, 'unknown', 
                      'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 
@@ -76,5 +74,5 @@ for row_num, row_data in enumerate(data):
             worksheet.write_datetime(row_num, col_num, cell_value, date_format)
         else:
             worksheet.write(row_num, col_num, cell_value)
-# Chiudi il workbook
+
 workbook.close()

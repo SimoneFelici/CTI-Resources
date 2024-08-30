@@ -4,6 +4,7 @@ from requests_html import HTMLSession
 from datetime import datetime
 import openpyxl
 from openpyxl.styles import PatternFill
+from openpyxl.worksheet.hyperlink import Hyperlink
 from config.group_defaults import group_defaults
 import googlemaps
 import os
@@ -91,13 +92,11 @@ def main(country, ransom_id):
                     'Data from Local System', 'unknown', 'unknown', 'Data Encrypted for Impact', 'NO', ''
                 ])
 
-    workbook = openpyxl.load_workbook('Brazil Threat Intelligence Report NEW VERSION.xlsx')
+    workbook = openpyxl.load_workbook(config.FILE)
     worksheet = workbook['Details']
 
-    # Crea un fill pattern rosso
     red_fill = PatternFill(start_color="FFFF0000", end_color="FFFF0000", fill_type="solid")
 
-    # Trova l'ultima riga utilizzata nel foglio
     last_row = worksheet.max_row
 
     for row_data in data:
@@ -106,7 +105,11 @@ def main(country, ransom_id):
             cell = worksheet.cell(row=last_row, column=col_num, value=cell_value)
             cell.fill = red_fill
             if isinstance(cell_value, datetime):
-                cell.number_format = 'mm/dd/yy'
+                cell.number_format = 'mm/dd/yyyy'
+            elif isinstance(cell_value, str) and cell_value.startswith('http'):
+                cell.hyperlink = Hyperlink(target=cell_value, ref=cell.coordinate)
+                cell.style = 'Hyperlink'
+
 
     workbook.save(config.FILE)
 

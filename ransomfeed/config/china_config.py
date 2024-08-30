@@ -1,4 +1,4 @@
-COUNTRY = 'China'
+COUNTRY = 'Cina'
 URL = 'https://ransomfeed.it/stats.php?page=country-list&country=China&y=0'
 API = False
 FILE = 'Threat Intelligence Cina.xlsx'
