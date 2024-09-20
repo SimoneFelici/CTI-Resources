@@ -10,12 +10,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Funzione per determinare il trimestre in base al mese
 def get_quarter(month):
     return (month - 1) // 3 + 1
 
+# Funzione per determinare il mese all'interno del trimestre
 def get_month_in_quarter(month):
     return (month - 1) % 3 + 1
 
+# Funzione per ottenere lo stato e la regione della vittima utilizzando l'API di Google Maps
 def get_state(victim, config):
     google_maps_api_key = os.getenv('GOOGLE_MAPS_API_KEY')
 
@@ -31,6 +34,7 @@ def get_state(victim, config):
         if place_details['status'] == 'OK':
             address_components = place_details['result']['address_components']
             
+            # Gestione speciale per la Spagna
             if config.COUNTRY.lower() == 'spain':
                 state = next((comp['long_name'] for comp in address_components if 'administrative_area_level_2' in comp['types']), '')
             else:
@@ -43,6 +47,7 @@ def get_state(victim, config):
     return '', ''
 
 def main(country, ransom_id):
+    # Importazione dinamica della configurazione specifica del paese
     try:
         config = importlib.import_module(f'config.{country.lower()}_config')
     except ImportError:
@@ -55,6 +60,8 @@ def main(country, ransom_id):
     data = []
     current_date = datetime.now()
     current_date = current_date.strftime("%d/%m/%Y")
+
+    # Elaborazione di ogni riga della tabella
     for row in reversed(table):
         cells = row.find('td')
         if int(cells[0].text) >= int(ransom_id):
@@ -62,12 +69,15 @@ def main(country, ransom_id):
             date_raw = cells[1].text
             victim = cells[2].text
             group = cells[3].text
+            
+            # Conversione e formattazione della data
             date = datetime.strptime(date_raw, '%Y-%m-%d %H:%M:%S')
             year = date.year
             month = date.month
             quarter = get_quarter(month)
             month_in_quarter = get_month_in_quarter(month)
 
+            # Ottenimento della regione e dello stato se l'API è abilitata
             if config.API:
                 region, state = get_state(victim, config)
             else:
@@ -75,11 +85,13 @@ def main(country, ransom_id):
 
             common_data = config.get_common_data(victim, region, state, month_in_quarter, quarter, year)
 
+            # Gestione speciale per la Spagna
             if country.lower() == 'spain':
                 spain_specific_data = config.get_spain_specific_data(state)
             else:
                 spain_specific_data = ['', '']
 
+            # Creazione della riga di dati in base al gruppo di ransomware
             if group in group_defaults:
                 group_values = group_defaults[group]
                 group_name = group_values[0]
@@ -103,6 +115,7 @@ def main(country, ransom_id):
                     'Data from Local System', 'unknown', 'unknown', 'Data Encrypted for Impact', 'NO', ''
                 ])
 
+    # Creazione e scrittura del file Excel
     new_file = f"output_{config.COUNTRY}.xlsx"
     workbook = xlsxwriter.Workbook(new_file)
     worksheet = workbook.add_worksheet('Details')
