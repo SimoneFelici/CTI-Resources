@@ -111,6 +111,37 @@ group_defaults = {
         "Defense Evasion: Obfuscated Files or Information, Masquerading, Execution Guardrails, Create or Modify System Process\n"
         "Privilege Escalation: Access Token Manipulation\n"
         "Command and Control: Encrypted Channel"
+    ],
+    'cactus': [
+        'Cactus',
+        'unknown', 'unknown', 'Exploit Public-Facing Application', 'Command and Scripting Interpreter',
+        'Scheduled Task/Job', 'Process Injection', 'Impair Defenses',
+        'Credentials from Password Stores', 'System Network Connections Discovery', 'Remote Services',
+        'Automated Collection', 'Remote Access Software',
+        'Exfiltration Over Web Service', 'Data Encrypted for Impact', 'SI',
+        "Execution: Windows Management Instrumentation, Shared Modules, Software Deployments Tools\n"
+        "Persistence: Create Account, Hijack Execution Flow\n"
+        "Defense Evasion: Obfuscated Files or Information, Process Injection, Masquerading, Virtualization/Sandbox Evasion, Hide Artifacts\n"
+        "Credential Access: OS Credential Dumping, Input Capture\n"
+        "Discovery: Account Discovery, Remote System Discovery, System Information Discovery, Software Discovery, Process Discovery, File and Directory Discovery\n"
+        "Lateral Movement: Lateral Tool Transfer\n"
+        "Collection: Input Capture\n"
+        "Command and Control: Proxy, Application Layer Protocol, Non-Application Layer Protocol, Non-Standard Port, Encrypted Channel"
+    ],
+    'arcusmedia': [
+        'Arcus Media',
+        'unknown', 'unknown', 'Exploit Public-Facing Application', 'Shared Modules',
+        'Hijack Execution Flow', 'Process Injection', 'Obfuscated Files or Information',
+        'OS Credential Dumping', 'Network Service Discovery', 'Lateral Tool Transfer',
+        'Data from Local System', 'Dynamic Resolution',
+        'unknown', 'Data Encrypted for Impact', 'SI',
+        "Initial Access: Replication Through Removable Media\n"
+        "Execution: Command and Scripting Interpreter\n"
+        "Defense Evasion: Virtualization/Sandbox Evasion, Indicator Removal\n"
+        "Credential Access: Input Capture\n"
+        "Discovery: Process Discovery, File and Directory Discovery, System Information Discovery, Software Discovery, File and Directory Discovery, Peripheral Device Discovery\n"
+        "Command and Control: Ingress Tool Transfer\n"
+        "Impact: Service Stop, Defacement"
     ]
 
 }

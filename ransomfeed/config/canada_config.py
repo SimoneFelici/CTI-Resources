@@ -1,9 +1,9 @@
 COUNTRY = 'Canada'
 URL = 'https://ransomfeed.it/stats.php?page=country-list&country=Canada&y=0'
 API = True
-FILE = 'Canada Threat Intelligence Report_ufficiale.xlsx'
 
 STATE_TRANSLATIONS = {
+    'Québec': 'Quebec',
 
 }
 

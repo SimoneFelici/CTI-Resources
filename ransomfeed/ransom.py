@@ -2,9 +2,7 @@ import sys
 import importlib
 from requests_html import HTMLSession
 from datetime import datetime
-import openpyxl
-from openpyxl.styles import PatternFill
-from openpyxl.worksheet.hyperlink import Hyperlink
+import xlsxwriter
 from config.group_defaults import group_defaults
 import googlemaps
 import os
@@ -32,11 +30,17 @@ def get_state(victim, config):
         place_details = gmaps.place(place_id=place['place_id'])
         if place_details['status'] == 'OK':
             address_components = place_details['result']['address_components']
-            state = next((comp['long_name'] for comp in address_components if 'administrative_area_level_1' in comp['types']), 'Unknown')
+            
+            if config.COUNTRY.lower() == 'spain':
+                state = next((comp['long_name'] for comp in address_components if 'administrative_area_level_2' in comp['types']), '')
+            else:
+                state = next((comp['long_name'] for comp in address_components if 'administrative_area_level_1' in comp['types']), '')
+            
             state = config.STATE_TRANSLATIONS.get(state, state)
-            region = next((r for r, states in config.REGIONS.items() if state in states), 'Unknown')
+            region = next((r for r, states in config.REGIONS.items() if state in states), '')
             return region, state
-    return 'Unknown', 'Unknown'
+        
+    return '', ''
 
 def main(country, ransom_id):
     try:
@@ -50,7 +54,7 @@ def main(country, ransom_id):
     table = response.html.xpath('//div/table/tbody/tr')
     data = []
     current_date = datetime.now()
-
+    current_date = current_date.strftime("%d/%m/%Y")
     for row in reversed(table):
         cells = row.find('td')
         if int(cells[0].text) >= int(ransom_id):
@@ -71,6 +75,11 @@ def main(country, ransom_id):
 
             common_data = config.get_common_data(victim, region, state, month_in_quarter, quarter, year)
 
+            if country.lower() == 'spain':
+                spain_specific_data = config.get_spain_specific_data(state)
+            else:
+                spain_specific_data = ['', '']
+
             if group in group_defaults:
                 group_values = group_defaults[group]
                 group_name = group_values[0]
@@ -79,39 +88,39 @@ def main(country, ransom_id):
                     f"L'azienda {victim} è stata colpita da un attacco ransomware sferrato dalla cybergang {group_name}",
                     '', '', 'Simone Felici',
                     f'https://ransomfeed.it/index.php?page=post_details&id_post={id}',
-                    current_date, *group_values[1:]
-                ])
+                    current_date
+                ] + spain_specific_data + list(group_values[1:]))
             else:
                 data.append(common_data + [
                     group, '',
                     f"L'azienda {victim} è stata colpita da un attacco ransomware sferrato dalla cybergang {group}",
                     '', '', 'Simone Felici',
                     f'https://ransomfeed.it/index.php?page=post_details&id_post={id}',
-                    current_date, 'unknown', 'unknown', 'unknown', 'unknown', 'unknown',
+                    current_date
+                ] + spain_specific_data + [
+                    'unknown', 'unknown', 'unknown', 'unknown', 'unknown',
                     'unknown', 'unknown', 'unknown', 'unknown', 'unknown',
                     'Data from Local System', 'unknown', 'unknown', 'Data Encrypted for Impact', 'NO', ''
                 ])
 
-    workbook = openpyxl.load_workbook(config.FILE)
-    worksheet = workbook['Details']
+    new_file = f"output_{config.COUNTRY}.xlsx"
+    workbook = xlsxwriter.Workbook(new_file)
+    worksheet = workbook.add_worksheet('Details')
 
-    red_fill = PatternFill(start_color="FFFF0000", end_color="FFFF0000", fill_type="solid")
+    date_format = workbook.add_format({'num_format': 'mm/dd/yyyy'})
 
-    last_row = worksheet.max_row
-
-    for row_data in data:
-        last_row += 1
-        for col_num, cell_value in enumerate(row_data, start=1):
-            cell = worksheet.cell(row=last_row, column=col_num, value=cell_value)
-            cell.fill = red_fill
+    for row_idx, row_data in enumerate(data):
+        for col_num, cell_value in enumerate(row_data):
             if isinstance(cell_value, datetime):
-                cell.number_format = 'mm/dd/yyyy'
+                worksheet.write_datetime(row_idx, col_num, cell_value, date_format)
             elif isinstance(cell_value, str) and cell_value.startswith('http'):
-                cell.hyperlink = Hyperlink(target=cell_value, ref=cell.coordinate)
-                cell.style = 'Hyperlink'
+                worksheet.write_url(row_idx, col_num, cell_value)
+            else:
+                worksheet.write(row_idx, col_num, cell_value)
 
+    workbook.close()
 
-    workbook.save(config.FILE)
+    print(f"File salvato come {new_file}")
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:

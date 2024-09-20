@@ -13,9 +13,11 @@ def get_month_in_quarter(month):
 
 session = HTMLSession()
 translator = Translator()
-i = 5
+i = 1
 data = []
 current_date = datetime.now()
+current_date = current_date.strftime('%d/%m/%Y')
+
 processed_links = set()
 
 while i > 0:
@@ -70,7 +72,18 @@ date_format = workbook.add_format({'num_format': 'dd/mm/yyyy'})
 
 for row_num, row_data in enumerate(data):
     for col_num, cell_value in enumerate(row_data):
+        # Check if the column is the one that should contain a date (col_num 22)
         if col_num == 22:
+            if isinstance(cell_value, str):
+                try:
+                    # Attempt to convert the string to a datetime object
+                    cell_value = datetime.strptime(cell_value, '%d/%m/%Y')
+                except ValueError:
+                    # If conversion fails, handle appropriately (skip or log an error)
+                    print(f"Invalid date format in row {row_num}, column {col_num}: {cell_value}")
+                    continue  # Skip writing if date format is invalid
+            
+            # Now cell_value should be a datetime object, write it
             worksheet.write_datetime(row_num, col_num, cell_value, date_format)
         else:
             worksheet.write(row_num, col_num, cell_value)
